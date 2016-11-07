@@ -22,12 +22,11 @@ Create the Shadow Taxonomy.
 ```php
 add_action( 'init', function() {
 	register_taxonomy(
-		get_tax_office(),
-		get_type_staff(),
+		'services-tax',
+		'staff-cpt',
 		array(
-			'label'         => __( 'Offices', 'graydon' ),
+			'label'         => __( 'Services', 'text-domain' ),
 			'rewrite'       => false,
-			'public'        => true,
 			'show_tagcloud' => false,
 			'hierarchical'  => true,
 		)
@@ -35,10 +34,20 @@ add_action( 'init', function() {
     // We will make our connection here in the next step.
 });
 ```
+Here we are simple creating a normal custom taxonomy. In our example we are creating a taxonomy to mirror a CPT we already
+have completed called Services. So as a convention I have named my Shadow Taxonomy 'services-tax'.
+
+Also because I am wanting to link Services to another post type called Staff. I have registered this custom taxonomy to show up on the Staff CPT post edit screen.
+
+Lastly, I have not made this taxonomy ```public```. That is because I don't want anybody in there messing with the terms for this taxonomy. I what to let the Shadow Taxonomy Library handle creating, updating, and deleting the shadow taxonomy terms. That way I can ensure that my shadow taxonomy stays properly syned to it's associated post type.
 
 ### Step Two:
 Use the Shadow Taxonomy Library API to create an association.
 ```php
-\Shadow_Taxonomy\Core\create_relationship( get_type_office(), get_tax_office() );
+\Shadow_Taxonomy\Core\create_relationship( 'service-cpt', 'service-tax' );
 ```
+This one line is all you need to create the shadow taxonomy link, so that this library can kick in and take over management
+of the shadow taxonomy. The first argument is the custom post type name, and the second argument is the newly created shadow taxonomy
+name.
 
+This line should go immediately after the ```register_taxonomy``` call in the first step.
