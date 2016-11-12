@@ -435,7 +435,7 @@ class Shadow_Terms extends \WP_CLI_Command {
 				if ( empty( $shadow_term ) ) {
 					return $post;
 				}
-				
+
 				$term = get_term_by( 'slug', $post->post_name, $tax );
 
 				if ( empty( $term )  ) {

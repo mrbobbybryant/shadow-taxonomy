@@ -275,3 +275,27 @@ function get_associated_term( $post, $taxonomy ) {
 	$term_id = get_associated_term_id( $post );
 	return get_term_by( 'id', $term_id, $taxonomy );
 }
+
+/**
+ * Function will get all related posts for a given post ID. The function
+ * essentially converts all the attached shadow term relations into the actual associated
+ * posts.
+ * @param int $post_id The ID of the post.
+ * @param string $taxonomy The name of the shadow taxonomy
+ * @param string $cpt The name of the associated post type
+ *
+ * @return array|bool Returns false or an are of post Objects if any are found.
+ */
+function get_the_posts( $post_id, $taxonomy, $cpt ) {
+	$terms = get_the_terms( $post_id, $taxonomy );
+
+	if ( ! empty( $terms ) ) {
+		return array_map( function( $term ) use ( $cpt ) {
+			$post = get_associated_post( $term, $cpt );
+			if ( ! empty( $post ) ) {
+				return $post;
+			}
+		}, $terms );
+	}
+	return false;
+}
