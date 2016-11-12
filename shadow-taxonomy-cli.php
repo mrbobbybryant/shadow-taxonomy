@@ -181,6 +181,7 @@ class Shadow_Terms extends \WP_CLI_Command {
 			if ( empty( $term_id ) ) {
 				\WP_CLI::error( sprintf( 'Associated Shadow %s not found', $args[0] ) );
 			} else {
+				$test = 0;
 				\WP_CLI::success( sprintf( 'Shadow Taxonomy is in Sync', $args[0] ) );
 			}
 		}
@@ -398,7 +399,100 @@ class Shadow_Terms extends \WP_CLI_Command {
 	}
 
 	public function deep_sync( $args, $assoc_args ) {
+		if ( ! post_type_exists( $assoc_args['cpt'] ) ) {
+			\WP_CLI::error( esc_html__( 'The Post Type you provided does not exist.' ) );
+		}
 
+		if ( ! taxonomy_exists( $assoc_args['tax'] ) ) {
+			\WP_CLI::error( esc_html__( 'The Taxonomy you provided does not exist.' ) );
+		}
+
+		$verbose = isset( $assoc_args[ 'verbose' ] );
+		$dry_run = isset( $assoc_args[ 'dry-run' ] );
+		$tax = $assoc_args['tax'];
+		$cpt = $assoc_args['cpt'];
+		$count = 0;
+
+		/**
+		 * Check for missing Shadow Taxonomy Terms.
+		 */
+		$args = [
+			'post_type'         =>  $cpt,
+			'post_status'       =>  'publish',
+			'posts_per_page'    =>  500
+		];
+
+		$posts = new \WP_Query( $args );
+
+		if ( is_wp_error( $posts ) ) {
+			\WP_CLI::error( esc_html__( 'An error occurred while searching for posts.' ) );
+		}
+
+		if ( $posts->have_posts() ) {
+			$term_to_create = array_filter( $posts->posts, function( $post ) use ( $tax ) {
+				$shadow_term = get_post_meta( $post->ID, 'shadow_term_id', true );
+
+				if ( empty( $shadow_term ) ) {
+					return $post;
+				}
+				
+				$term = get_term_by( 'slug', $post->post_name, $tax );
+
+				if ( empty( $term )  ) {
+					return $post;
+				}
+
+			} );
+			$count = $count + count( $term_to_create );
+		}
+
+		/**
+		 * Output When Running a dry-run
+		 */
+		if ( $dry_run ) {
+			$items = [];
+			if ( isset( $term_to_create ) ) {
+				array_push( $items, [ 'action' => 'create', 'count' => count( $term_to_create ) ] );
+			}
+
+			\WP_CLI::warning( esc_html__( 'View the below table to see how many terms will be created or deleted.' ) );
+			\WP_CLI\Utils\format_items( 'table', $items, array( 'action', 'count' ) );
+			return;
+		}
+
+		if ( 0 === $count ) {
+			\WP_CLI::success( esc_html__( 'Shadow Taxonomy is in sync, no action needed.' ) );
+			return;
+		}
+
+		/**
+		 * Process Shadow Taxonomy Additions and Deletions.
+		 */
+		if ( ! $dry_run ) {
+			\WP_CLI::log( sprintf( 'Processing %d posts...', absint( $posts->found_posts ) ) );
+
+			/**
+			 * Create Shadow Terms
+			 */
+			if ( isset( $term_to_create ) ) {
+				foreach ( $term_to_create as $post ) {
+					$new_term = wp_insert_term( $post->post_title, $assoc_args['tax'], [ 'slug' => $post->post_name ] );
+
+					if ( is_wp_error( $new_term ) ) {
+						\WP_CLI::error( $new_term );
+					}
+
+					if ( $verbose ) {
+						\WP_CLI::log( sprintf( 'Created Term: %s', esc_html( $post->post_title ) ) );
+					}
+
+					update_term_meta( $new_term[ 'term_id' ], 'shadow_post_id', $post->ID );
+					update_post_meta( $post->ID, 'shadow_term_id', $new_term[ 'term_id' ] );
+				}
+			}
+		}
+
+		\WP_CLI::success( sprintf( 'Process Complete. Successfully synced %d posts and terms', absint( $count ) ) );
 	}
 
 }
