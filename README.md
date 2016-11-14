@@ -4,16 +4,17 @@ Useful for relating Post Types to other Post Types.
 ### Introduction
 One of the hardest things to do in WordPress is creating relationships between two different post types. Often times
 this is accomplished by saving information about the relationships in post meta. However this leads to your code having
-a number of meta queries, and meta queries are generally one of the pooest most taxing queries you can make in WordPress.
+a number of meta queries, and meta queries are generally one of the poorest, most taxing queries you can make in WordPress.
 
 Metadata can also be a pain to keep synced. For example, when posts are deleted, what happens to the post meta you have
 saved in on a seperate post type?
 
 ## What is a Shadow Taxonomy.
-A shadow taxonomy is a custom WordPress taxonomy which is created to mirror a specific post type. So anytime post in that
+A shadow taxonomy is a custom WordPress taxonomy which is created to mirror a specific post type. So anytime a post in that
 post type is created, updated, or deleted, the associated shadow taxonomy term is also created, updated, and deleted.
 
-Additionally by using a taxonomy we get a nice UI of checkboxes for linking posts together for free. 
+Additionally by using a taxonomy we get a nice UI of checkboxes for linking posts together for free on the post edit screen.
+
 
 ## Useage
 
@@ -51,3 +52,14 @@ of the shadow taxonomy. The first argument is the custom post type name, and the
 name.
 
 This line should go immediately after the ```register_taxonomy``` call in the first step.
+
+### API
+```php
+get_the_posts( $post_id, $taxonomy, $cpt )
+```
+Returns an array of WP Post Objects or false if no associated posts are found.
+- ```post_id (int) ``` **required** - The ID of the post who's associations you want to find.
+- ```taxonomy (string) ``` **required** - The Shadow Taxonomy Slug.
+- ```cpt (string) ``` **required** - The Associated Custom Post Type Slug.
+
+
