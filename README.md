@@ -62,4 +62,16 @@ Returns an array of WP Post Objects or false if no associated posts are found.
 - ```taxonomy (string) ``` **required** - The Shadow Taxonomy Slug.
 - ```cpt (string) ``` **required** - The Associated Custom Post Type Slug.
 
-
+This library also contains a few WP_CLI scripts to help you manage your shadow taxonomies. The primary one is useful when you are bringing in this library to an existing site, which already contains a lot of posts. The following WP_CLI script will go through and create all the needed shadow taxonomy terms.
+```php
+wp shadow sync --cpt=cpt_slug --tax=taxonomy_slug
+// Will sync all of the input custom post types by creating terms in the input taxonomy.
+wp shadow sync --cpt=cpt_slug --tax=taxonomy_slug --dry-run
+// Will output a table of the changes the script will make without actually making any changes.
+wp shadow sync --cpt=cpt_slug --tax=taxonomy_slug --verbose
+// Will sync the terms but also output more logs as it process your data.
+```
+- ```--cpt (string) ``` **required** - The post type which you want to shadow.
+- ```--tax (string) ``` **required** - The taxonomy to use as the shadow.
+- ```--dry-run (flag) ``` **optional** - Will not create the term, but rather will list what changes would be made.
+- ```--verbose (flag) ``` **options** - Will simply cause the script to output additional logging in running.
