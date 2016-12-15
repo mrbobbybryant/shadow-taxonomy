@@ -9,6 +9,15 @@ namespace Shadow_Taxonomy\Core;
  * @param string $taxonomy Taxonomy Slug
  */
 function create_relationship( $post_type, $taxonomy ) {
+
+	if ( ! post_type_exists( $post_type ) ) {
+		error_log( 'Failed to create shadow taxonomy. Post type does not exist.' );
+	}
+
+	if ( ! taxonomy_exists( $taxonomy ) ) {
+		error_log( 'Failed to create shadow taxonomy. Taxonomy does not exist.' );
+	}
+
 	add_action( 'wp_insert_post', create_shadow_term( $post_type, $taxonomy ) );
 	add_action( 'before_delete_post', delete_shadow_term( $taxonomy ) );
 	add_action( 'create_' . $taxonomy, create_shadow_post( $post_type, $taxonomy ) );
