@@ -21,7 +21,6 @@ function create_relationship( $post_type, $taxonomy ) {
 
 	add_action( 'wp_insert_post', create_shadow_term( $post_type, $taxonomy ) );
 	add_action( 'before_delete_post', delete_shadow_term( $taxonomy ) );
-	add_action( 'create_' . $taxonomy, create_shadow_post( $post_type, $taxonomy ) );
 }
 
 /**
@@ -46,27 +45,26 @@ function create_shadow_term( $post_type, $taxonomy ) {
 
 		if ( ! $term ) {
 			create_shadow_taxonomy_term( $post_id, $taxonomy );
+		} else {
+			$post = get_associated_post( $term, $post_type );
+
+			if ( empty( $post ) ) {
+				return false;
+			}
+
+			if ( post_type_already_in_sync( $term, $post ) ) {
+				return false;
+			}
+
+			wp_update_term(
+				$term->term_id,
+				$taxonomy,
+				[
+					'name' => $post->post_title,
+					'slug' => $post->post_name,
+				]
+			);
 		}
-
-		$post = get_associated_post( $term, $post_type );
-
-		if ( empty( $post ) ) {
-			return false;
-		}
-
-		if ( post_type_already_in_sync( $term, $post ) ) {
-			return false;
-		}
-
-		wp_update_term(
-			$term->term_id,
-			$taxonomy,
-			[
-				'name' => $post->post_title,
-				'slug' => $post->post_name,
-			]
-		);
-
 	};
 
 }
@@ -92,39 +90,6 @@ function delete_shadow_term( $taxonomy ) {
 }
 
 /**
- * Function creates a closure for the create_ taxonomy term creation hook, which handles creating an
- * associated post for the target post type.
- *
- * @param string $post_type Post Type Slug.
- * @param string $taxonomy Taxonomy Slug.
- *
- * @return Closure
- */
-function create_shadow_post( $post_type, $taxonomy ) {
-	return function( $term_id ) use ( $post_type, $taxonomy ) {
-		$is_current_post_type = ( isset( $_POST['post_type'] ) && $_POST['post_type'] !== $post_type );
-		$is_current_taxonomy  = ( isset( $_POST['action'] ) && str_replace( 'add-', '', $_POST['action'] !== $taxonomy ) );
-
-		if ( ! $is_current_post_type && ! $is_current_taxonomy ) {
-			return false;
-		}
-		$term = get_term( $term_id, $taxonomy );
-
-		if ( is_wp_error( $term ) ) {
-			return false;
-		}
-
-		$post = get_related_post_by_slug( $term, $post_type );
-
-		if ( ! empty( $post ) ) {
-			return false;
-		}
-
-		return create_shadow_post_type( $post_type, $term );
-	};
-}
-
-/**
  * Function responsible for actually creating the shadow term and set the term meta to
  * create the association.
  *
@@ -144,44 +109,6 @@ function create_shadow_taxonomy_term( $post_id, $taxonomy ) {
 	update_post_meta( $post_id, 'shadow_term_id', $new_term['term_id'] );
 
 	return $new_term;
-}
-
-/**
- * Function creates a new post to match the passed in taxonomy term.
- *
- * @param string $post_type Post Type Slug.
- * @param string $term Taxonomy Term name.
- */
-function create_shadow_post_type( $post_type, $term ) {
-	$new_post = wp_insert_post([
-		'post_type'   => $post_type,
-		'post_title'  => $term->name,
-		'post_name'   => $term->slug,
-		'post_status' => 'publish',
-	]);
-
-	update_post_meta( $new_post, 'shadow_term_id', $term->term_id );
-	update_term_meta( $term->term_id, 'shadow_post_id', $new_post );
-
-	return $new_post;
-}
-
-/**
- * Function checks to see if the current term and its associated post have the same
- * title and slug. While we generally rely on term and post meta to track association,
- * its important that these two value stay synced.
- *
- * @param object $term The Term Object.
- * @param object $post The Post Object.
- *
- * @return bool Return true if a match is found, or false if no match is found.
- */
-function term_already_in_sync( $term, $post ) {
-	if ( $post->post_title === $term->name && $post->post_name === $term->slug ) {
-		return true;
-	}
-
-	return false;
 }
 
 /**
