@@ -185,23 +185,7 @@ function get_associated_post( $term, $post_type ) {
 		return false;
 	}
 
-	$args = [
-		'p'                      => $post_id,
-		'post_type'              => $post_type,
-		'post_status'            => 'publish',
-		'posts_per_page'         => 1,
-		'no_found_rows'          => true,
-		'update_post_meta_cache' => false,
-		'update_post_term_cache' => false,
-	];
-
-	$posts = new \WP_Query( $args );
-
-	if ( is_wp_error( $posts ) && ! $posts->have_posts() ) {
-		return false;
-	}
-
-	return $posts->posts[0];
+	return get_post( $post_id );
 }
 
 /**
