@@ -10,15 +10,6 @@ namespace Shadow_Taxonomy\Core;
  * @param string $taxonomy Taxonomy Slug.
  */
 function create_relationship( $post_type, $taxonomy ) {
-
-	if ( ! post_type_exists( $post_type ) ) {
-		error_log( 'Failed to create shadow taxonomy. Post type does not exist.' );
-	}
-
-	if ( ! taxonomy_exists( $taxonomy ) ) {
-		error_log( 'Failed to create shadow taxonomy. Taxonomy does not exist.' );
-	}
-
 	add_action( 'wp_insert_post', create_shadow_term( $post_type, $taxonomy ) );
 	add_action( 'before_delete_post', delete_shadow_term( $taxonomy ) );
 }
@@ -35,16 +26,14 @@ function create_shadow_term( $post_type, $taxonomy ) {
 	return function( $post_id ) use ( $post_type, $taxonomy ) {
 		$term = get_associated_term( $post_id, $taxonomy );
 
-		if ( ! isset( $_POST['post_title'] ) && ! isset( $_POST['post_name'] ) ) {
-			return false;
-		}
+		$post = get_post( $post_id );
 
-		if ( $_POST['post_type'] !== $post_type ) {
+		if ( $post->post_type !== $post_type ) {
 			return false;
 		}
 
 		if ( ! $term ) {
-			create_shadow_taxonomy_term( $post_id, $taxonomy );
+			create_shadow_taxonomy_term( $post_id, $post, $taxonomy );
 		} else {
 			$post = get_associated_post( $term, $post_type );
 
@@ -98,8 +87,8 @@ function delete_shadow_term( $taxonomy ) {
  *
  * @return bool|int false Term ID if created or false if an error occurred.
  */
-function create_shadow_taxonomy_term( $post_id, $taxonomy ) {
-	$new_term = wp_insert_term( $_POST['post_title'], $taxonomy, [ 'slug' => $_POST['post_name'] ] );
+function create_shadow_taxonomy_term( $post_id, $post, $taxonomy ) {
+	$new_term = wp_insert_term( $post->post_title, $taxonomy, [ 'slug' => $post->post_name ] );
 
 	if ( is_wp_error( $new_term ) ) {
 		return false;
