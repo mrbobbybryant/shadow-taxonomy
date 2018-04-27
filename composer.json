@@ -1,7 +1,7 @@
 {
 	"name": "developwithwp/shadow-taxonomies",
 	"description": "A library used for create relationships between CPT's",
-	"version": "0.9.1",
+	"version": "0.0.1",
 	"type": "package",
 	"keywords": [],
 	"homepage": "https://github.com/mrbobbybryant/shadow-taxonomy",
@@ -19,9 +19,7 @@
 			"url"  : "https://wpackagist.org"
 		}
 	],
-	"require": {
-		"aaronholbrook/autoload": "dev-master"
-	},
+	"require": {},
     "require-dev": {
 	},
   "autoload": {

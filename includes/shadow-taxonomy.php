@@ -111,7 +111,7 @@ function create_shadow_taxonomy_term( $post_id, $post, $taxonomy ) {
  * @return bool Return true if a match is found, or false if no match is found.
  */
 function post_type_already_in_sync( $term, $post ) {
-	if ( $term->name === $post->post_title && $term->slug === $post->post_name ) {
+	if ( $term->name === $post->post_title ) {
 		return true;
 	}
 
