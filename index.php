@@ -13,4 +13,4 @@ if ( ! defined( 'SHADOW_TAX_INC' ) ) {
 }
 
 require_once SHADOW_TAX_INC . 'shadow-taxonomy.php';
-require_once SHADOW_TAX_INC . '\shadow-taxonomy-cli.php';
+require_once SHADOW_TAX_INC . 'shadow-taxonomy-cli.php';
