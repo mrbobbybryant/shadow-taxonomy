@@ -32,6 +32,10 @@ function create_shadow_term( $post_type, $taxonomy ) {
 			return false;
 		}
 
+		if ( 'auto-draft' === $post->post_status ) {
+			return false;
+		}
+
 		if ( ! $term ) {
 			create_shadow_taxonomy_term( $post_id, $post, $taxonomy );
 		} else {
@@ -83,6 +87,7 @@ function delete_shadow_term( $taxonomy ) {
  * create the association.
  *
  * @param int    $post_id Post ID Number.
+ * @param object $post The WP Post Object.
  * @param string $taxonomy Taxonomy Term Name.
  *
  * @return bool|int false Term ID if created or false if an error occurred.
@@ -200,6 +205,10 @@ function get_associated_term( $post, $taxonomy ) {
 
 	if ( is_int( $post ) ) {
 		$post = get_post( $post );
+	}
+
+	if ( empty( $post ) ) {
+		return false;
 	}
 
 	$term_id = get_associated_term_id( $post );
