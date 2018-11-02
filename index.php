@@ -1,7 +1,7 @@
 <?php
 
 if ( ! defined( 'SHADOW_TAX_VERSION' ) ) {
-	define( 'SHADOW_TAX_VERSION', '0.0.1' );
+	define( 'SHADOW_TAX_VERSION', '0.0.2' );
 }
 
 if ( ! defined( 'SHADOW_TAX_PATH' ) ) {
