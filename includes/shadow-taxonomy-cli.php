@@ -54,7 +54,13 @@ class Shadow_Terms extends \WP_CLI_Command {
 		$args = [
 			'post_type'         =>  $cpt,
 			'post_status'       =>  'publish',
-			'posts_per_page'    =>  500
+			'posts_per_page'    =>  500,
+			'meta_query'        => [
+				[
+					'key'     => 'shadow_term_id',
+					'compare' => 'NOT EXISTS'
+				],
+			],
 		];
 
 		$posts = new \WP_Query( $args );
@@ -230,9 +236,15 @@ class Shadow_Terms extends \WP_CLI_Command {
 		 * Check for missing Shadow Taxonomy Terms.
 		 */
 		$args = [
-				'post_type'         =>  $cpt,
-				'post_status'       =>  'publish',
-				'posts_per_page'    =>  500
+			'post_type'         =>  $cpt,
+			'post_status'       =>  'publish',
+			'posts_per_page'    =>  500,
+			'meta_query'        => [
+				[
+					'key' => 'shadow_term_id',
+					'compare' => 'NOT EXISTS'
+				],
+			],
 		];
 
 		$posts = new \WP_Query( $args );
@@ -419,7 +431,13 @@ class Shadow_Terms extends \WP_CLI_Command {
 		$args = [
 			'post_type'         =>  $cpt,
 			'post_status'       =>  'publish',
-			'posts_per_page'    =>  500
+			'posts_per_page'    =>  500,
+			'meta_query'        => [
+				[
+					'key'     => 'shadow_term_id',
+					'compare' => 'NOT EXISTS'
+				],
+			],
 		];
 
 		$posts = new \WP_Query( $args );
